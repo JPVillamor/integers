@@ -4,7 +4,6 @@ import counter
 import forcemux
 import PIR
 import ADC
-import IR
 import websocket
 import json
 
@@ -110,20 +109,6 @@ def write_adc():
         
         time.sleep(.5)
 
-def send_ir():
-    while True:
-        output = IR.get_reading()
-        #ir_output_file = open('ir_output.txt', 'wt')
-        #ir_output_file.write(str(output))
-        #ir_output_file.close()
-        
-        #ir_file = open('ir_output.txt', 'r')
-        #ir_val = ir_file.readline()
-        #ir_file.close()
-        ws.send(json.dumps({'type':'data','value':{'sensor':'ircamera','value':output}}))
-        
-        #time.sleep(.5)
-
 temp_thread = threading.Thread(target=write_temp)
 accx_thread = threading.Thread(target=write_accx)
 accy_thread = threading.Thread(target=write_accy)
@@ -134,7 +119,6 @@ leftForce_thread = threading.Thread(target=write_leftForce)
 rightForce_thread = threading.Thread(target=write_rightForce)
 pir_thread = threading.Thread(target=write_PIR)
 adc_thread = threading.Thread(target=write_adc)
-ir_thread = threading.Thread(target=send_ir)
 
 
 if __name__=='__main__':
@@ -148,4 +132,3 @@ if __name__=='__main__':
 	rightForce_thread.start()
 	pir_thread.start()
 	adc_thread.start()
-	ir_thread.start()
