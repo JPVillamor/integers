@@ -12,12 +12,14 @@ def send_ir():
         try:
             output = IR.get_reading()
         except:
-            pass
+            continue
+            #pass
         try:
-            ws.send(json.dumps({'type':'data','value':{'sensor':'ircamera','value':output}}))
+            ws.send(json.dumps({'type':'ir_data','value':[{'sensor':'ircamera','value':output}]}))
         except:
             ws.connect('ws://eodmat.herokuapp.com/ws/matserver/')
-            ws.send(json.dumps({'type':'data','value':{'sensor':'ircamera','value':output}}))
+            ws.send(json.dumps({'type':'ir_data','value':[{'sensor':'ircamera','value':output}]}))
 
 if __name__=='__main__':
     send_ir()
+    #pass

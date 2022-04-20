@@ -18,7 +18,7 @@ def write_temp():
         temp_output_file = open('temp_output.txt', 'wt')
         temp_output_file.write(str(output)) 
         temp_output_file.close()
-        time.sleep(.5)
+        time.sleep(.4)
 
 def write_accx():
 	while True:
@@ -26,7 +26,7 @@ def write_accx():
 		accx_output_file = open('accx_output.txt', 'wt')
 		accx_output_file.write(str(output))
 		accx_output_file.close()
-		time.sleep(.5)
+		time.sleep(.4)
 		
 def write_accy():
 	while True:
@@ -34,7 +34,7 @@ def write_accy():
 		accy_output_file = open('accy_output.txt', 'wt')
 		accy_output_file.write(str(output))
 		accy_output_file.close()
-		time.sleep(.5)
+		time.sleep(.4)
 
 def write_accz():
 	while True:
@@ -42,7 +42,7 @@ def write_accz():
 		accz_output_file = open('accz_output.txt', 'wt')
 		accz_output_file.write(str(output))
 		accz_output_file.close()
-		time.sleep(.5)
+		time.sleep(.4)
 		
 def write_bottomForce():
 	while True:
@@ -52,7 +52,7 @@ def write_bottomForce():
 		bforce_output_file = open('lforce_output.txt', 'wt')
 		bforce_output_file.write(str(round(output, 2)))
 		bforce_output_file.close()
-		time.sleep(.5)
+		time.sleep(.4)
 
 def write_topForce():
 	while True:
@@ -62,7 +62,7 @@ def write_topForce():
 		tforce_output_file = open('tforce_output.txt', 'wt')
 		tforce_output_file.write(str(round(output, 2)))
 		tforce_output_file.close()
-		time.sleep(.5)
+		time.sleep(.4)
 
 def write_leftForce():
 	while True:
@@ -72,7 +72,7 @@ def write_leftForce():
 		lforce_output_file = open('rforce_output.txt', 'wt')
 		lforce_output_file.write(str(round(output, 2)))
 		lforce_output_file.close()
-		time.sleep(.5)
+		time.sleep(.4)
 		
 def write_rightForce():
 	while True:
@@ -82,7 +82,7 @@ def write_rightForce():
 		rforce_output_file = open('bforce_output.txt', 'wt')
 		rforce_output_file.write(str(round(output, 2)))
 		rforce_output_file.close()
-		time.sleep(.5)
+		time.sleep(.4)
 		
 def write_PIR():
     while True:
@@ -90,7 +90,7 @@ def write_PIR():
         PIR_output_file = open('PIR_output.txt', 'wt')
         PIR_output_file.write(str(output))
         PIR_output_file.close()
-        time.sleep(.5)
+        time.sleep(.4)
         
 def write_adc():
     while True:
@@ -109,7 +109,7 @@ def write_adc():
         sound_output_file.write(str(round(output, 3)))
         sound_output_file.close()
         
-        time.sleep(.5)
+        time.sleep(.4)
 
 temp_thread = threading.Thread(target=write_temp)
 accx_thread = threading.Thread(target=write_accx)
@@ -124,13 +124,13 @@ adc_thread = threading.Thread(target=write_adc)
 
 
 if __name__=='__main__':
-	temp_thread.start()
-	accx_thread.start()
-	accy_thread.start()
-	accz_thread.start()
-	bottomForce_thread.start()
-	topForce_thread.start()
-	leftForce_thread.start()
-	rightForce_thread.start()
-	pir_thread.start()
-	adc_thread.start()
+    temp_thread.start()
+    accx_thread.start()
+    accy_thread.start()
+    accz_thread.start()
+    bottomForce_thread.start()
+    topForce_thread.start()
+    leftForce_thread.start()
+    rightForce_thread.start()
+    pir_thread.start()
+    adc_thread.start()
