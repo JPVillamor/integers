@@ -122,7 +122,7 @@ rightForce_thread = threading.Thread(target=write_rightForce)
 pir_thread = threading.Thread(target=write_PIR)
 adc_thread = threading.Thread(target=write_adc)
 
-
+'''
 if __name__=='__main__':
     temp_thread.start()
     accx_thread.start()
@@ -134,3 +134,4 @@ if __name__=='__main__':
     rightForce_thread.start()
     pir_thread.start()
     adc_thread.start()
+'''

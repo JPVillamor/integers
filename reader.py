@@ -3,16 +3,13 @@ import requests
 import websocket
 import time
 import os
+import forcemux
+import counter
+import PIR
+import ADC
 
 ws = websocket.WebSocket()
 ws.connect('ws://eodmat.herokuapp.com/ws/matserver/')
-
-def read_sensor(filename):
-    sensor_file = open(filename, 'r')
-    val = sensor_file.readline()
-    sensor_file.close()
-    #ws.send(json.dumps({'type':'data','value':{'sensor':sensor,'value':val}}))
-    return val
 
 def read_all():
     temp_dict = {'sensor':'temp','value':0}
@@ -34,28 +31,39 @@ def read_all():
         photoResistor_dict, photoDiode_dict, sound_dict, pir_dict
         ]
     while True:
-        time.sleep(.4)
         try:
-            temp_dict['value'] = read_sensor('temp_output.txt')
-            accx_dict['value'] = read_sensor('accx_output.txt')
-            accy_dict['value'] = read_sensor('accy_output.txt')
-            accz_dict['value'] = read_sensor('accz_output.txt')
-            bottomForce_dict['value'] = read_sensor('bforce_output.txt')
-            topForce_dict['value'] = read_sensor('tforce_output.txt')
-            leftForce_dict['value'] = read_sensor('lforce_output.txt')
-            rightForce_dict['value'] = read_sensor('rforce_output.txt')
-            photoResistor_dict['value'] = read_sensor('photoResistor_output.txt')
-            photoDiode_dict['value'] = read_sensor('photoDiode_output.txt')
-            sound_dict['value'] = read_sensor('sound_output.txt')
+            temp_dict['value'] = counter.get_temp()
+            accx_dict['value'] = counter.get_acc('x')
+            accy_dict['value'] = counter.get_acc('y')
+            accz_dict['value'] = counter.get_acc('z')
+            with forcemux.force2:
+                forcemux.function(forcemux.force2, 2)
+            bottomForce_dict['value'] = round(forcemux.force_out2, 2)
+            with forcemux.force3:
+                forcemux.function(forcemux.force3, 3)
+            topForce_dict['value'] = round(forcemux.force_out3, 2)
+            with forcemux.force1:
+                forcemux.function(forcemux.force1, 1)
+            leftForce_dict['value'] = round(forcemux.force_out1, 2)
+            with forcemux.force4:
+                forcemux.function(forcemux.force4, 4)
+            rightForce_dict['value'] = round(forcemux.force_out4, 2)
             
-            pir_file = open('PIR_output.txt', 'r')
-            pir_val = pir_file.readline()
-            pir_file.close()
-            pir_dict['value'] = pir_val
+            photoResistor_dict['value'] = round(ADC.resistor_chan.voltage, 3)
+            photoDiode_dict['value'] = round(ADC.diode_chan.voltage, 3)
+            sound_dict['value'] = round(ADC.sound_chan.voltage, 3)
             
-            ws.send(json.dumps({'type':'data','value':payload_list}))
+            pir_dict['value'] = PIR.get_reading()
+            time.sleep(.2)
         except:
-            pass
+            continue
+            
+        try:
+            ws.send(json.dumps({'type':'data','value':payload_list}))
+            time.sleep(.2)
+        except:
+            ws.connect('ws://eodmat.herokuapp.com/ws/matserver/')
+            ws.send(json.dumps({'type':'data','value':payload_list}))
         
 if __name__=='__main__':
     read_all()

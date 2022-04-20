@@ -22,4 +22,3 @@ def send_ir():
 
 if __name__=='__main__':
     send_ir()
-    #pass
