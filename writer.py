@@ -7,16 +7,18 @@ import ADC
 import websocket
 import json
 
+READINGS = 25
+
 ws = websocket.WebSocket()
 ws.connect('ws://eodmat.herokuapp.com/ws/matserver/')
 
 def write_temp():
-	while True:
-		output = counter.get_temp()
-		temp_output_file = open('temp_output.txt', 'wt')
-		temp_output_file.write(str(output))
-		temp_output_file.close()
-		time.sleep(.5)
+    while True:
+        output = counter.get_temp()
+        temp_output_file = open('temp_output.txt', 'wt')
+        temp_output_file.write(str(output)) 
+        temp_output_file.close()
+        time.sleep(.5)
 
 def write_accx():
 	while True:

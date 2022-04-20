@@ -54,6 +54,7 @@ def read_all():
         
         
         read_and_send('temp', 'temp_output.txt', prev_temp)
+        '''
         read_and_send('accx', 'accx_output.txt', prev_accx)
         read_and_send('accy', 'accy_output.txt', prev_accy)
         read_and_send('accz', 'accz_output.txt', prev_accz)
@@ -69,6 +70,7 @@ def read_all():
         pir_val = pir_file.readline()
         pir_file.close()
         ws.send(json.dumps({'type':'data','value':{'sensor':'pir','value':pir_val}}))
+        '''
         '''
         
         
@@ -125,6 +127,8 @@ def read_all():
         '''
 
 if __name__=='__main__':
-    read_all()
-
+    try:
+        read_all()
+    except:
+        pass
 
