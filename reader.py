@@ -37,7 +37,7 @@ pixels = neopixel.NeoPixel(
 OFF = (0,0,0)
 RED = (255,0,0)
 
-thresholds = {'temp': 23, 'acc': 11, 'force': 3, 'photoR': 3, 'photoD': 1, 'sound': .7, 'pir': 1}
+thresholds = {'temp': 27, 'accx': 1, 'accy': 1, 'accz': 11.5, 'force': 16, 'photoR': 3, 'photoD': .5, 'sound': 1.5, 'pir': 1}
 
 def fast_sensor_poll():
     while True:
@@ -47,17 +47,17 @@ def fast_sensor_poll():
             else:
                 pixels[0] = OFF
                 
-            if counter.get_acc('x') >= thresholds['acc']:
+            if abs(counter.get_acc('x')) >= thresholds['accx']:
                 pixels[1] = RED
             else:
                 pixels[1] = OFF
             
-            if counter.get_acc('y') >= thresholds['acc']:
+            if abs(counter.get_acc('y')) >= thresholds['accy']:
                 pixels[2] = RED
             else:
                 pixels[2] = OFF
             
-            if counter.get_acc('z') >= thresholds['acc']:
+            if abs(counter.get_acc('z')) >= thresholds['accz']:
                 pixels[3] = RED
             else:
                 pixels[3] = OFF
