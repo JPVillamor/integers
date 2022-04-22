@@ -9,6 +9,7 @@ import PIR
 import ADC
 import board
 import neopixel
+import threading
 
 # Choose an open pin connected to the Data In of the NeoPixel strip, i.e. board.D18
 # NeoPixels must be connected to D10, D12, D18 or D21 to work.
@@ -33,6 +34,75 @@ thresholds = {'temp': 23, 'acc': 11, 'force': 3, 'photoR': 3, 'photoD': 1, 'soun
 ws = websocket.WebSocket()
 ws.connect('ws://eodmat.herokuapp.com/ws/matserver/')
 
+def fast_sensor_poll():
+    while True:
+        try:
+            if counter.get_temp() >= thresholds['temp']:
+                pixels[0] = RED
+            else:
+                pixels[0] = OFF
+                
+            if counter.get_acc('x') >= thresholds['acc']:
+                pixels[1] = RED
+            else:
+                pixels[1] = OFF
+            
+            if counter.get_acc('y') >= thresholds['acc']:
+                pixels[2] = RED
+            else:
+                pixels[2] = OFF
+            
+            if counter.get_acc('z') >= thresholds['acc']:
+                pixels[3] = RED
+            else:
+                pixels[3] = OFF
+            
+            with forcemux.force2:
+                forcemux.function(forcemux.force2, 2)
+            bottomForceVal = round(forcemux.force_out2, 2)
+                
+            with forcemux.force3:
+                forcemux.function(forcemux.force3, 3)
+            topForceVal = round(forcemux.force_out3, 2)
+                            
+            with forcemux.force1:
+                forcemux.function(forcemux.force1, 1)
+            leftForceVal = round(forcemux.force_out1, 2)
+                            
+            with forcemux.force4:
+                forcemux.function(forcemux.force4, 4)
+            rightForceVal = round(forcemux.force_out4, 2)
+            
+            if max(bottomForceVal, topForceVal, leftForceVal, rightForceVal) >= thresholds['force']:
+                pixels[4] = RED
+            else:
+                pixels[4] = OFF
+                
+            if round(ADC.resistor_chan.voltage, 3) >= thresholds['photoR']:
+                pixels[5] = RED
+            else:
+                pixels[5] = OFF
+            if round(ADC.diode_chan.voltage, 3) >= thresholds['photoD']:
+                pixels[6] = RED
+            else:
+                pixels[6] = OFF
+            
+            if round(ADC.sound_chan.voltage, 3) >= thresholds['sound']:
+                pixels[7] = RED
+            else:
+                pixels[7] = OFF
+            
+            if PIR.get_reading() >= thresholds['pir']:
+                pixels[8] = RED
+            else:
+                pixels[8] = OFF
+                
+            pixels.show()
+            time.sleep(.02)
+        except:
+            print('error')
+            continue
+
 def read_all():
     temp_dict = {'sensor':'temp','value':0}
     accx_dict = {'sensor':'accx','value':0}
@@ -55,28 +125,12 @@ def read_all():
     while True:
         try:
             temp_dict['value'] = counter.get_temp()
-            if temp_dict['value'] >= thresholds['temp']:
-                pixels[0] = RED
-            else:
-                pixels[0] = OFF
-                
+                            
             accx_dict['value'] = counter.get_acc('x')
-            if accx_dict['value'] >= thresholds['acc']:
-                pixels[1] = RED
-            else:
-                pixels[1] = OFF
-                
+                            
             accy_dict['value'] = counter.get_acc('y')
-            if accy_dict['value'] >= thresholds['acc']:
-                pixels[2] = RED
-            else:
-                pixels[2] = OFF
-                
+                            
             accz_dict['value'] = counter.get_acc('z')
-            if accz_dict['value'] >= thresholds['acc']:
-                pixels[3] = RED
-            else:
-                pixels[3] = OFF
                 
             with forcemux.force2:
                 forcemux.function(forcemux.force2, 2)
@@ -93,47 +147,30 @@ def read_all():
             with forcemux.force4:
                 forcemux.function(forcemux.force4, 4)
             rightForce_dict['value'] = round(forcemux.force_out4, 2)
-            if rightForce_dict['value'] >= thresholds['force'] or leftForce_dict['value'] >= thresholds['force'] or topForce_dict['value'] >= thresholds['force'] or bottomForce_dict['value'] >= thresholds['force']:
-                pixels[4] = RED
-            else:
-                pixels[4] = OFF
-            
+                        
             photoResistor_dict['value'] = round(ADC.resistor_chan.voltage, 3)
-            if photoResistor_dict['value'] >= thresholds['photoR']:
-                pixels[5] = RED
-            else:
-                pixels[5] = OFF
-                
+                            
             photoDiode_dict['value'] = round(ADC.diode_chan.voltage, 3)
-            if photoDiode_dict['value'] >= thresholds['photoD']:
-                pixels[6] = RED
-            else:
-                pixels[6] = OFF
-                
+                            
             sound_dict['value'] = round(ADC.sound_chan.voltage, 3)
-            if sound_dict['value'] >= thresholds['sound']:
-                pixels[7] = RED
-            else:
-                pixels[7] = OFF
                             
             pir_dict['value'] = PIR.get_reading()
-            if pir_dict['value'] >= thresholds['pir']:
-                pixels[8] = RED
-            else:
-                pixels[8] = OFF
             
-            pixels.show()
-            time.sleep(.2)
+            time.sleep(.15)
         except:
             continue
             
         try:
             ws.send(json.dumps({'type':'data','value':payload_list}))
-            time.sleep(.2)
+            time.sleep(.15)
         except:
             ws.connect('ws://eodmat.herokuapp.com/ws/matserver/')
             ws.send(json.dumps({'type':'data','value':payload_list}))
-        
+
+sender_thread = threading.Thread(target=read_all)
+led_thread = threading.Thread(target=fast_sensor_poll)
+
 if __name__=='__main__':
-    read_all()
+    sender_thread.start()
+    led_thread.start()
 
