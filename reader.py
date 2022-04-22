@@ -2,14 +2,22 @@ import json
 import requests
 import websocket
 import time
-#import os
 import forcemux
 import counter
 import PIR
 import ADC
 import board
 import neopixel
+import rel
+import _thread
 import threading
+
+#websocket.enableTrace(True)
+ws = websocket.WebSocketApp('ws://eodmat.herokuapp.com/ws/matserver/')
+#ws.connect('wss://eodmat.herokuapp.com/ws/matserver/')
+ws.run_forever(skip_utf8_validation=True, dispatcher=rel)
+rel.abort()
+rel.dispatch()
 
 # Choose an open pin connected to the Data In of the NeoPixel strip, i.e. board.D18
 # NeoPixels must be connected to D10, D12, D18 or D21 to work.
@@ -29,10 +37,7 @@ pixels = neopixel.NeoPixel(
 OFF = (0,0,0)
 RED = (255,0,0)
 
-thresholds = {'temp': 23, 'acc': 11, 'force': 3, 'photoR': 3, 'photoD': 1, 'sound': 1, 'pir': 1}
-
-ws = websocket.WebSocket()
-ws.connect('ws://eodmat.herokuapp.com/ws/matserver/')
+thresholds = {'temp': 23, 'acc': 11, 'force': 3, 'photoR': 3, 'photoD': 1, 'sound': .7, 'pir': 1}
 
 def fast_sensor_poll():
     while True:
@@ -100,7 +105,7 @@ def fast_sensor_poll():
             pixels.show()
             time.sleep(.02)
         except:
-            print('error')
+            #print('error')
             continue
 
 def read_all():
@@ -125,48 +130,89 @@ def read_all():
     while True:
         try:
             temp_dict['value'] = counter.get_temp()
-                            
+        except:
+            continue
+        
+        try:
             accx_dict['value'] = counter.get_acc('x')
-                            
+        except:
+            continue
+        
+        try:
             accy_dict['value'] = counter.get_acc('y')
-                            
+        except:
+            continue
+        
+        try:
             accz_dict['value'] = counter.get_acc('z')
-                
+        except:
+            continue
+        
+        try:
             with forcemux.force2:
                 forcemux.function(forcemux.force2, 2)
             bottomForce_dict['value'] = round(forcemux.force_out2, 2)
-                
+        except:
+            continue
+        
+        try:
             with forcemux.force3:
                 forcemux.function(forcemux.force3, 3)
             topForce_dict['value'] = round(forcemux.force_out3, 2)
-                            
+        except:
+            continue
+        
+        try:
             with forcemux.force1:
                 forcemux.function(forcemux.force1, 1)
             leftForce_dict['value'] = round(forcemux.force_out1, 2)
-                            
+        except:
+            continue
+        
+        try:
             with forcemux.force4:
                 forcemux.function(forcemux.force4, 4)
             rightForce_dict['value'] = round(forcemux.force_out4, 2)
-                        
-            photoResistor_dict['value'] = round(ADC.resistor_chan.voltage, 3)
-                            
-            photoDiode_dict['value'] = round(ADC.diode_chan.voltage, 3)
-                            
-            sound_dict['value'] = round(ADC.sound_chan.voltage, 3)
-                            
-            pir_dict['value'] = PIR.get_reading()
-            
-            time.sleep(.15)
         except:
             continue
+        
+        try:
+            photoResistor_dict['value'] = round(ADC.resistor_chan.voltage, 3)
+        except:
+            continue
+        
+        try:
+            photoDiode_dict['value'] = round(ADC.diode_chan.voltage, 3)
+        except:
+            continue
+        
+        try:
+            sound_dict['value'] = round(ADC.sound_chan.voltage, 3)
+        except:
+            continue
+        
+        try:
+            pir_dict['value'] = PIR.get_reading()
+        except:
+            continue
+        
+        time.sleep(.2)
             
         try:
             ws.send(json.dumps({'type':'data','value':payload_list}))
-            time.sleep(.15)
+            time.sleep(.2)
         except:
-            ws.connect('ws://eodmat.herokuapp.com/ws/matserver/')
-            ws.send(json.dumps({'type':'data','value':payload_list}))
-
+            ws = websocket.WebSocketApp('ws://eodmat.herokuapp.com/ws/matserver/')
+            #ws.connect('wss://eodmat.herokuapp.com/ws/matserver/')
+            ws.run_forever(skip_utf8_validation=True, dispatcher=rel)
+            rel.abort()
+            rel.dispatch()
+            #print('sending error')
+            #time.sleep(.5)
+            #ws.connect('ws://eodmat.herokuapp.com/ws/matserver/')
+            #ws.send(json.dumps({'type':'data','value':payload_list}))
+            continue
+        
 sender_thread = threading.Thread(target=read_all)
 led_thread = threading.Thread(target=fast_sensor_poll)
 
